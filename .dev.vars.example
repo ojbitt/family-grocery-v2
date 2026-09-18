@@ -1,0 +1,2 @@
+# Copy to .dev.vars (git-ignored) for local development.
+AUTH_SECRET = "dev-secret-change-me"

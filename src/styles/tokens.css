@@ -1,0 +1,274 @@
+/* Design tokens — see docs/specs.md §12.
+   One source of truth per token: colours use light-dark(<light>, <dark>) and
+   resolve against `color-scheme`, which the two rules after :root drive from the
+   user's theme choice (data-theme) or, absent one, the OS setting. */
+:root {
+  color-scheme: light dark;
+
+  /* palette — light value first, dark value second */
+  --c-bg: light-dark(#f4f5f6, #0f1211);
+  --c-surface: light-dark(#ffffff, #181c1b);
+  --c-surface-2: light-dark(#eceef0, #222827);
+  --c-border: light-dark(#e2e4e7, #2c3331);
+  --c-hairline: light-dark(rgba(20, 25, 28, 0.06), rgba(255, 255, 255, 0.07));
+  --c-text: light-dark(#16191c, #e8eae9);
+  --c-text-dim: light-dark(#5b6268, #a3abaa);
+  --c-text-faint: light-dark(#6b7075, #7c8583); /* AA on --c-bg in both themes */
+  --c-accent: light-dark(#0c6b62, #2dd4bf);
+  --c-accent-contrast: light-dark(#ffffff, #06201d);
+  --c-accent-soft: light-dark(#d7ebe8, #123531);
+  --c-success: light-dark(#15803d, #4ade80);
+  --c-danger: light-dark(#c31d1d, #f87171); /* AA on --c-danger-soft and on white */
+  --c-danger-soft: light-dark(#fbe3e3, #3a1d1d);
+  --c-scrim: light-dark(rgba(10, 12, 14, 0.42), rgba(0, 0, 0, 0.58));
+  --c-toast-bg: light-dark(#1f2733, #2b3230);
+  --c-toast-fg: light-dark(#f6f7f8, #edefee);
+  --c-shadow-1: light-dark(rgba(10, 12, 14, 0.12), rgba(0, 0, 0, 0.45));
+  --c-shadow-2: light-dark(rgba(10, 12, 14, 0.14), rgba(0, 0, 0, 0.5));
+  --c-frame: light-dark(#dcdfe3, #050706); /* the space beside the app column on wide screens */
+
+  /* radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-full: 999px;
+
+  /* spacing scale */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  /* type */
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --t-tab: 12px; /* bottom-nav labels only — deliberately below the reading scale */
+  --t-caption: 14px; /* eyebrows, timestamps, field labels, helper text */
+  --t-body-sm: 16px; /* secondary text: notes, qty, hints, toasts */
+  --t-body: 17px; /* default body / list rows */
+  --t-title: 20px; /* sheet titles, collapsed header */
+  --t-screen: 28px; /* screen headings */
+
+  /* elevation — structure shared across themes, tint from --c-shadow-* */
+  --e-1: 0 1px 3px var(--c-shadow-1);
+  --e-2: 0 4px 13px var(--c-shadow-2);
+  --e-up: 0 -2px 13px var(--c-shadow-2);
+
+  /* controls — two heights only.
+     --control-h    everything interactive: form fields, every button, the FAB
+     --control-h-sm compact toolbar strip: header chips, search field, status bar */
+  --control-h: 44px;
+  --control-h-sm: 36px;
+  --row-h: 67px; /* list rows (hold two lines: name + note) */
+
+  /* motion */
+  --dur: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* layout */
+  --tabbar-h: 56px;
+  --header-h: 60px; /* fixed on every screen; sticky sub-toolbars offset by this */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* keep the app phone-width and centred on larger screens; fixed elements
+     (tab bar, toasts, FAB, sheets) offset by --app-edge to stay in the column */
+  --app-max-w: 480px;
+  --app-edge: max(0px, calc((100vw - var(--app-max-w)) / 2));
+}
+
+/* Theme choice → color-scheme (light-dark() and native controls resolve against this). */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Installed iOS PWAs (viewport-fit=cover + a translucent status bar, both set
+   in index.html) wrongly subtract the top safe-area inset from height:100%
+   and 100dvh on first paint, leaving the root short by that amount — visible
+   as a blank gap near the bottom tab bar until the next layout pass (e.g. any
+   navigation) makes WebKit recompute it correctly. Add it back explicitly. */
+@media (display-mode: standalone) {
+  html,
+  body {
+    height: calc(100% + env(safe-area-inset-top));
+  }
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--t-body);
+  line-height: 1.4;
+  color: var(--c-text);
+  background: var(--c-frame);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+#app {
+  min-height: 100%;
+  max-width: var(--app-max-w);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-bg);
+}
+@media (min-width: 481px) {
+  #app {
+    border-inline: 1px solid var(--c-border);
+  }
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Every SVG is an icon here. Block-level so it isn't aligned to the text
+   baseline — inline SVGs pick up line-height leading and land a sub-pixel off
+   centre, and how that rounds varies by device (notably iPhone Display Zoom). */
+svg {
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --- shared control utilities -------------------------------------------- */
+
+/* Expand a small control's touch target to ~44px without changing its look.
+   The host must not set `overflow: hidden`. */
+.hit {
+  position: relative;
+}
+.hit::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+/* Uppercase section eyebrow — the label above a group of rows or fields. */
+.u-eyebrow {
+  font-size: var(--t-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-faint);
+}
+
+/* Text input / select / textarea — one height and one focus ring across every form. */
+.input {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+}
+textarea.input {
+  padding: var(--s-3);
+  line-height: 1.5;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 3px var(--c-accent-soft);
+}
+
+/* Full-width primary action button — the prominent one in a sheet. */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--s-4);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-accent);
+  color: var(--c-accent-contrast);
+  font-size: var(--t-body);
+  font-weight: 700;
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Full-width low-emphasis destructive button. */
+.btn-danger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--s-4);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+  font-weight: 600;
+}
+
+/* Small rounded pill button — the header store picker. */
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--control-h-sm);
+  max-width: 55vw;
+  padding: 0 var(--s-3);
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: var(--t-body-sm);
+  font-weight: 700;
+}
+.pill > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
